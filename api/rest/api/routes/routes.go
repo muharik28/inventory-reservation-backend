@@ -1,0 +1,36 @@
+package routes
+
+import (
+	"github.com/gin-gonic/gin"
+	infoHandler "github.com/muharik28/inventory-reservation-backend/internal/application/handlers/info"
+	invHandler "github.com/muharik28/inventory-reservation-backend/internal/application/handlers/inventory"
+	resHandler "github.com/muharik28/inventory-reservation-backend/internal/application/handlers/reservation"
+)
+
+type RouterParams struct {
+	InfoHandler      infoHandler.InfoHandler
+	InventoryHandler invHandler.InventoryHandler
+	ReservationHandler resHandler.ReservationHandler
+}
+
+func SetupRouter(r *gin.Engine, p RouterParams) {
+	// Base health checks
+	r.GET("/health", p.InfoHandler.HealthCheck)
+	r.GET("/info", p.InfoHandler.GetInfo)
+
+	// API v1 group
+	v1 := r.Group("/api/v1")
+	{
+		// Info
+		v1.GET("/info", p.InfoHandler.GetInfo)
+
+		// Inventory
+		inventory := v1.Group("/inventory")
+		{
+			inventory.GET("/stock", p.InventoryHandler.GetStock)
+			inventory.POST("/reserve", p.ReservationHandler.Reserve)
+			inventory.POST("/confirm", p.ReservationHandler.Confirm)
+			inventory.POST("/items", p.InventoryHandler.CreateItem)
+		}
+	}
+}

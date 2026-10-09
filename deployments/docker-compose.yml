@@ -1,0 +1,65 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: inventory-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: inventory_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../migrations/20210101_init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d inventory_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: ..
+      dockerfile: build/package/Dockerfile
+    container_name: inventory-api
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      APP_ENV: production
+      APP_PORT: 8080
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: inventory_db
+      DB_SSLMODE: disable
+      RESERVATION_TTL: 5m
+    ports:
+      - "8080:8080"
+    command: ["rest"]
+
+  scheduler:
+    build:
+      context: ..
+      dockerfile: build/package/Dockerfile
+    container_name: inventory-scheduler
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      APP_ENV: production
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: inventory_db
+      DB_SSLMODE: disable
+      SCHEDULER_INTERVAL: 10s
+    command: ["scheduler"]
+
+volumes:
+  postgres_data:
