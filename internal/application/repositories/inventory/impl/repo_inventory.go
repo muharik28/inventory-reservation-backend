@@ -6,9 +6,9 @@ import (
 	"errors"
 	"time"
 
-	"github.com/uptrace/bun"
 	"github.com/muharik28/inventory-reservation-backend/internal/application/repositories/inventory"
 	domain "github.com/muharik28/inventory-reservation-backend/internal/domain/entities/inventory"
+	"github.com/uptrace/bun"
 )
 
 type InventoryRepositoryImpl struct {
@@ -77,7 +77,6 @@ func (r *InventoryRepositoryImpl) Save(ctx context.Context, db bun.IDB, item *do
 		Model(model).
 		On("CONFLICT (item_id) DO UPDATE").
 		Set("total_stock = EXCLUDED.total_stock").
-		Set("reserved_stock = EXCLUDED.reserved_stock").
 		Set("updated_at = EXCLUDED.updated_at").
 		Exec(ctx)
 
@@ -95,7 +94,7 @@ func (r *InventoryRepositoryImpl) UpdateStock(ctx context.Context, db bun.IDB, i
 
 	_, err := targetDB.NewUpdate().
 		Model(model).
-		Column("total_stock", "reserved_stock", "updated_at").
+		Column("total_stock", "updated_at").
 		Where("item_id = ?", item.ItemID).
 		Exec(ctx)
 

@@ -9,11 +9,10 @@ func ToInventoryDomain(m *InventoryModel) *inventory.Inventory {
 		return nil
 	}
 	return &inventory.Inventory{
-		ItemID:        m.ItemID,
-		TotalStock:    m.TotalStock,
-		ReservedStock: m.ReservedStock,
-		CreatedAt:     m.CreatedAt,
-		UpdatedAt:     m.UpdatedAt,
+		ItemID:     m.ItemID,
+		TotalStock: m.TotalStock,
+		CreatedAt:  m.CreatedAt,
+		UpdatedAt:  m.UpdatedAt,
 	}
 }
 
@@ -22,10 +21,9 @@ func ToInventoryModel(d *inventory.Inventory) *InventoryModel {
 		return nil
 	}
 	return &InventoryModel{
-		ItemID:        d.ItemID,
-		TotalStock:    d.TotalStock,
-		ReservedStock: d.ReservedStock,
-		CreatedAt:     d.CreatedAt,
-		UpdatedAt:     d.UpdatedAt,
+		ItemID:     d.ItemID,
+		TotalStock: d.TotalStock,
+		CreatedAt:  d.CreatedAt,
+		UpdatedAt:  d.UpdatedAt,
 	}
 }
