@@ -11,9 +11,9 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ../migrations/20210101_init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ../migrations/20261010_init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d inventory_db"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d inventory_db" ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -39,7 +39,7 @@ services:
       RESERVATION_TTL: 5m
     ports:
       - "8080:8080"
-    command: ["rest"]
+    command: [ "rest" ]
 
   scheduler:
     build:
@@ -59,7 +59,7 @@ services:
       DB_NAME: inventory_db
       DB_SSLMODE: disable
       SCHEDULER_INTERVAL: 10s
-    command: ["scheduler"]
+    command: [ "scheduler" ]
 
 volumes:
   postgres_data:
