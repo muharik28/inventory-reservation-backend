@@ -6,9 +6,9 @@ import (
 	"errors"
 	"time"
 
-	"github.com/uptrace/bun"
 	"github.com/muharik28/inventory-reservation-backend/internal/application/repositories/reservation"
 	domain "github.com/muharik28/inventory-reservation-backend/internal/domain/entities/reservation"
+	"github.com/uptrace/bun"
 )
 
 type ReservationRepositoryImpl struct {
@@ -121,4 +121,27 @@ func (r *ReservationRepositoryImpl) FindExpiredPending(ctx context.Context, now 
 	}
 
 	return results, nil
+}
+
+func (r *ReservationRepositoryImpl) SumActiveByItem(ctx context.Context, db bun.IDB, itemID string, now time.Time) (int, error) {
+	targetDB := db
+	if targetDB == nil {
+		targetDB = r.db
+	}
+
+	var models []ReservationModel
+	var total int
+
+	err := targetDB.NewSelect().
+		Model(&models).
+		ColumnExpr("COALESCE(SUM(quantity), 0) AS active_reserved").
+		Where("item_id = ?", itemID).
+		Where("status = ?", domain.StatusPending).
+		Where("expires_at > ?", now).
+		Scan(ctx, &total)
+	if err != nil {
+		return 0, err
+	}
+
+	return total, nil
 }
