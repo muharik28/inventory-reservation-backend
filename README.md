@@ -23,6 +23,7 @@ $ go run main.go help
 
 # Specific help for sub-commands
 $ go run main.go help rest
+
 $ go run main.go help scheduler
 
 # Using --help flag
@@ -39,22 +40,8 @@ $ go build -o inventory.exe main.go
 
 # 2. Run commands
 $ .\inventory.exe rest
+
 $ .\inventory.exe scheduler
-
-# Create migration file
-$ go run main.go rest database create-migration --name users
-
-# Generate SQL from migration (to review before applying)
-$ go run main.go rest database generate-sql --name users
-
-# Run migrations on database
-$ go run main.go rest database migrate
-
-# Rollback last migration
-$ go run main.go rest database rollback --steps 1
-
-# Check status (which migrations have been run)
-$ go run main.go rest database status
 ```
 
 ## How to run unit test
@@ -85,31 +72,37 @@ $ go test -count=1 -v ./test/...
 Despite, it is possible to run docker compose this project in local machine Please follow this steps:
 ```sh
 # Build image and run all containers in the background
-docker compose -f deployments/docker-compose.yml up -d --build
+$ docker compose -f deployments/docker-compose.yml up -d --build
 
 # Only run postgres database container
-docker compose -f deployments/docker-compose.yml up -d postgres
+$ docker compose -f deployments/docker-compose.yml up -d postgres
 
 # Restart postgres database container
-docker compose -f deployments/docker-compose.yml restart postgres
+$ docker compose -f deployments/docker-compose.yml restart postgres
 
 # View Container Status
-docker compose -f deployments/docker-compose.yml ps
+$ docker compose -f deployments/docker-compose.yml ps
 
 # View all logs in realtime
-docker compose -f deployments/docker-compose.yml logs -f
+$ docker compose -f deployments/docker-compose.yml logs -f
 
 # View only REST API logs
-docker compose -f deployments/docker-compose.yml logs -f app
+$ docker compose -f deployments/docker-compose.yml logs -f app
 
 # View only Scheduler logs
-docker compose -f deployments/docker-compose.yml logs -f scheduler
+$ docker compose -f deployments/docker-compose.yml logs -f scheduler
 
 # Stop container
-docker compose -f deployments/docker-compose.yml down
+$ docker compose -f deployments/docker-compose.yml down
 
 # Stop container + reset/delete volume data database
-docker compose -f deployments/docker-compose.yml down -v
+$ docker compose -f deployments/docker-compose.yml down -v
+
+# Even if an error still occurs in `go mod download`
+# Notice the error message that appears before exit code: 1
+$ docker build --no-cache --progress=plain -t app .
+
+$ docker build --no-cache --progress=plain -t scheduler .
 ```
 
 ## API Documentation (Swagger)
@@ -203,5 +196,5 @@ $ swag init -g cmd/rest/rest.go -o docs/api
     │   ├── testdata/            # Test data
     │   ├── integration_test.go  # Integration test
     └── migrations/              # Database migration scripts
-        └── 20210101_init.sql    # Initial migration script
+        └── 20261010_init.sql    # Initial migration script
 
