@@ -8,7 +8,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/spf13/cobra"
 	"github.com/muharik28/inventory-reservation-backend/api/rest/api"
 	"github.com/muharik28/inventory-reservation-backend/cmd"
 	"github.com/muharik28/inventory-reservation-backend/configs"
@@ -23,6 +22,7 @@ import (
 	resUseCase "github.com/muharik28/inventory-reservation-backend/internal/application/usecases/reservation/impl"
 	"github.com/muharik28/inventory-reservation-backend/internal/pkg/database/sql"
 	"github.com/muharik28/inventory-reservation-backend/internal/pkg/logger"
+	"github.com/spf13/cobra"
 )
 
 // @title Inventory Reservation API
@@ -54,7 +54,7 @@ var RestCmd = &cobra.Command{
 
 		// Use Cases
 		iUseCase := infoUseCase.NewInfoUseCase(iRepo)
-		inventoryUseCase := invUseCase.NewInventoryUseCase(inventoryRepo)
+		inventoryUseCase := invUseCase.NewInventoryUseCase(db, inventoryRepo, reservationRepo)
 		reservationUseCase := resUseCase.NewReservationUseCase(db, inventoryRepo, reservationRepo, cfg)
 
 		// Handlers
@@ -83,6 +83,12 @@ var RestCmd = &cobra.Command{
 
 		if err := server.Shutdown(ctx); err != nil {
 			logger.Error("Server forced to shutdown", "error", err.Error())
+		}
+
+		if db != nil {
+			if err := db.Close(); err != nil {
+				logger.Error("Failed to close database connections", "error", err.Error())
+			}
 		}
 
 		logger.Info("Server stopped cleanly")
