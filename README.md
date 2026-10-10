@@ -47,7 +47,17 @@ $ .\inventory.exe scheduler
 ## How to run unit test
 
 Despite, it is possible to run unit test this project in local machine Please follow this steps:
+
+> **Note:** the `test/` suite contains unit tests **and** PostgreSQL-backed integration/concurrency tests.
+> Integration tests create a throwaway `inventory_test_db` database, so PostgreSQL must be reachable
+> (defaults match Docker Compose: `localhost:5432`, `postgres/postgres`). Start it first with:
+> `$ docker compose -f deployments/docker-compose.yml up -d postgres`
+> Without PostgreSQL, the integration tests are skipped automatically.
+
 ```sh
+# Run all tests with the race detector (required by the Definition of Done)
+$ go test -race -v ./...
+
 # Run unit test on folder test
 $ go test -v ./test/...
 
@@ -57,14 +67,11 @@ $ go test -v ./...
 # Run specific test
 $ go test -v ./test -run TestDomainLogic
 
-# Run specific test in parallel
-$ go test -v ./test -run TestRoutesAndHandlers
-
-# Run specific test in parallel without cache (re-run fresh)
-$ go test -count=1 -v ./test -run TestRoutesAndHandlers
+# Run concurrency / stress test
+$ go test -race -v ./test -run TestConcurrentReservationsDoNotOversell
 
 # Run all tests without cache (re-run fresh)
-$ go test -count=1 -v ./test/...
+$ go test -count=1 -race -v ./test/...
 ```
 
 ## How to run docker compose
