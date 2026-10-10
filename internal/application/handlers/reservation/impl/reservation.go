@@ -41,6 +41,7 @@ func (h *ReservationHandlerImpl) Reserve(c *gin.Context) {
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, entities.ErrorResponse{
 			Status: "error",
+			Code:   "INVALID_REQUEST",
 			Error:  err.Error(),
 		})
 		return
@@ -49,22 +50,18 @@ func (h *ReservationHandlerImpl) Reserve(c *gin.Context) {
 	var res *response.ReserveStockResponse
 	res, err := h.useCase.ReserveStock(c.Request.Context(), req)
 	if err != nil {
-		if errors.Is(err, domainInv.ErrInventoryNotFound) {
-			c.JSON(http.StatusNotFound, entities.ErrorResponse{
-				Status: "error",
-				Error:  err.Error(),
-			})
-			return
+		status, code := http.StatusInternalServerError, "INTERNAL_ERROR"
+		switch {
+		case errors.Is(err, domainInv.ErrInventoryNotFound):
+			status, code = http.StatusNotFound, "ITEM_NOT_FOUND"
+		case errors.Is(err, domainInv.ErrInvalidQuantity):
+			status, code = http.StatusBadRequest, "INVALID_QUANTITY"
+		case errors.Is(err, domainInv.ErrInsufficientStock):
+			status, code = http.StatusBadRequest, "INSUFFICIENT_STOCK"
 		}
-		if errors.Is(err, domainInv.ErrInsufficientStock) || errors.Is(err, domainInv.ErrInvalidQuantity) {
-			c.JSON(http.StatusBadRequest, entities.ErrorResponse{
-				Status: "error",
-				Error:  err.Error(),
-			})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, entities.ErrorResponse{
+		c.JSON(status, entities.ErrorResponse{
 			Status: "error",
+			Code:   code,
 			Error:  err.Error(),
 		})
 		return
@@ -90,6 +87,7 @@ func (h *ReservationHandlerImpl) Confirm(c *gin.Context) {
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, entities.ErrorResponse{
 			Status: "error",
+			Code:   "INVALID_REQUEST",
 			Error:  err.Error(),
 		})
 		return
@@ -98,22 +96,18 @@ func (h *ReservationHandlerImpl) Confirm(c *gin.Context) {
 	var res *response.ConfirmReservationResponse
 	res, err := h.useCase.ConfirmReservation(c.Request.Context(), req)
 	if err != nil {
-		if errors.Is(err, domainRes.ErrReservationNotFound) {
-			c.JSON(http.StatusNotFound, entities.ErrorResponse{
-				Status: "error",
-				Error:  err.Error(),
-			})
-			return
+		status, code := http.StatusInternalServerError, "INTERNAL_ERROR"
+		switch {
+		case errors.Is(err, domainRes.ErrReservationNotFound):
+			status, code = http.StatusNotFound, "RESERVATION_NOT_FOUND"
+		case errors.Is(err, domainRes.ErrReservationAlreadyHandled):
+			status, code = http.StatusBadRequest, "RESERVATION_ALREADY_HANDLED"
+		case errors.Is(err, domainRes.ErrReservationExpired):
+			status, code = http.StatusBadRequest, "RESERVATION_EXPIRED"
 		}
-		if errors.Is(err, domainRes.ErrReservationAlreadyHandled) || errors.Is(err, domainRes.ErrReservationExpired) {
-			c.JSON(http.StatusBadRequest, entities.ErrorResponse{
-				Status: "error",
-				Error:  err.Error(),
-			})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, entities.ErrorResponse{
+		c.JSON(status, entities.ErrorResponse{
 			Status: "error",
+			Code:   code,
 			Error:  err.Error(),
 		})
 		return
@@ -121,4 +115,3 @@ func (h *ReservationHandlerImpl) Confirm(c *gin.Context) {
 
 	c.JSON(http.StatusOK, res)
 }
-
