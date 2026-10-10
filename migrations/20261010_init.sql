@@ -1,4 +1,4 @@
--- Migrations: 20210101_init.sql
+-- Migrations: 20261010_init.sql
 
 CREATE TABLE IF NOT EXISTS inventories (
     item_id VARCHAR(100) PRIMARY KEY,
