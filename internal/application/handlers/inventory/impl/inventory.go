@@ -39,6 +39,7 @@ func (h *InventoryHandlerImpl) GetStock(c *gin.Context) {
 	if err := c.ShouldBindQuery(&req); err != nil {
 		c.JSON(http.StatusBadRequest, entities.ErrorResponse{
 			Status: "error",
+			Code:   "INVALID_REQUEST",
 			Error:  "Query parameter 'item_id' is required",
 		})
 		return
@@ -50,12 +51,14 @@ func (h *InventoryHandlerImpl) GetStock(c *gin.Context) {
 		if errors.Is(err, domain.ErrInventoryNotFound) {
 			c.JSON(http.StatusNotFound, entities.ErrorResponse{
 				Status: "error",
+				Code:   "ITEM_NOT_FOUND",
 				Error:  "Item not found",
 			})
 			return
 		}
 		c.JSON(http.StatusInternalServerError, entities.ErrorResponse{
 			Status: "error",
+			Code:   "INTERNAL_ERROR",
 			Error:  err.Error(),
 		})
 		return
@@ -80,6 +83,7 @@ func (h *InventoryHandlerImpl) CreateItem(c *gin.Context) {
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, entities.ErrorResponse{
 			Status: "error",
+			Code:   "INVALID_REQUEST",
 			Error:  err.Error(),
 		})
 		return
@@ -90,6 +94,7 @@ func (h *InventoryHandlerImpl) CreateItem(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, entities.ErrorResponse{
 			Status: "error",
+			Code:   "INTERNAL_ERROR",
 			Error:  err.Error(),
 		})
 		return
@@ -97,4 +102,3 @@ func (h *InventoryHandlerImpl) CreateItem(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, res)
 }
-
