@@ -1,16 +1,19 @@
 package configs
 
 import (
+	"bufio"
+	"log"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
 type Config struct {
-	AppEnv         string
-	AppPort        string
-	Database       DatabaseConfig
-	ReservationTTL time.Duration
+	AppEnv            string
+	AppPort           string
+	Database          DatabaseConfig
+	ReservationTTL    time.Duration
 	SchedulerInterval time.Duration
 }
 
@@ -24,6 +27,8 @@ type DatabaseConfig struct {
 }
 
 func LoadConfig() *Config {
+	loadEnvFile(".env", "../.env", "../../.env")
+
 	return &Config{
 		AppEnv:            getEnv("APP_ENV", "development"),
 		AppPort:           getEnv("APP_PORT", "8080"),
@@ -40,6 +45,46 @@ func LoadConfig() *Config {
 	}
 }
 
+func loadEnvFile(filenames ...string) {
+	for _, filename := range filenames {
+		file, err := os.Open(filename)
+		if err != nil {
+			continue
+		}
+		defer file.Close()
+
+		scanner := bufio.NewScanner(file)
+		for scanner.Scan() {
+			line := strings.TrimSpace(scanner.Text())
+			if line == "" || strings.HasPrefix(line, "#") {
+				continue
+			}
+
+			key, val, ok := strings.Cut(line, "=")
+			if !ok {
+				continue
+			}
+
+			key = strings.TrimSpace(key)
+			val = strings.TrimSpace(val)
+
+			// Remove surrounding quotes if present
+			if len(val) >= 2 && ((val[0] == '"' && val[len(val)-1] == '"') || (val[0] == '\'' && val[len(val)-1] == '\'')) {
+				val = val[1 : len(val)-1]
+			}
+
+			// Do not overwrite existing environment variables (e.g. from Docker or shell)
+			if _, exists := os.LookupEnv(key); !exists {
+				_ = os.Setenv(key, val)
+			}
+		}
+		if err := scanner.Err(); err != nil {
+			log.Printf("error reading env file %s: %v", filename, err)
+		}
+		break
+	}
+}
+
 func getEnv(key, defaultVal string) string {
 	if val := os.Getenv(key); val != "" {
 		return val
@@ -48,7 +93,7 @@ func getEnv(key, defaultVal string) string {
 }
 
 func getEnvDuration(key string, defaultVal time.Duration) time.Duration {
-	valStr := os.Getenv(key)
+	valStr := strings.ToLower(os.Getenv(key))
 	if valStr == "" {
 		return defaultVal
 	}

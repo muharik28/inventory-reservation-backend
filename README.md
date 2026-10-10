@@ -5,6 +5,112 @@
 - Install [PostgresSQL](https://www.postgresql.org/download/)
 - [Docker](https://docs.docker.com/install/) and [docker-compose](https://docs.docker.com/compose/)
 
+## How to run
+
+Despite, it is possible to run this project in local machine Please follow this steps:
+- Changes file .env to your config `.cp .env.example to .env`.
+
+```sh
+# run rest api server
+$ go run main.go rest
+
+# run scheduler (optional)
+$ go run main.go scheduler
+
+# General help
+$ go run main.go help
+
+# Specific help for sub-commands
+$ go run main.go help rest
+$ go run main.go help scheduler
+
+# Using --help flag
+$ go run main.go rest --help
+
+# Example for PowerShell
+$ go run main.go completion powershell | Out-String | Invoke-Expression
+
+# See other shell options
+$ go run main.go completion --help
+
+# 1. Build binary
+$ go build -o inventory.exe main.go
+
+# 2. Run commands
+$ .\inventory.exe rest
+$ .\inventory.exe scheduler
+
+# Create migration file
+$ go run main.go rest database create-migration --name users
+
+# Generate SQL from migration (to review before applying)
+$ go run main.go rest database generate-sql --name users
+
+# Run migrations on database
+$ go run main.go rest database migrate
+
+# Rollback last migration
+$ go run main.go rest database rollback --steps 1
+
+# Check status (which migrations have been run)
+$ go run main.go rest database status
+```
+
+## How to run unit test
+
+Despite, it is possible to run unit test this project in local machine Please follow this steps:
+```sh
+# Run unit test on folder test
+$ go test -v ./test/...
+
+# Run all tests in the project
+$ go test -v ./...
+
+# Run specific test
+$ go test -v ./test -run TestDomainLogic
+
+# Run specific test in parallel
+$ go test -v ./test -run TestRoutesAndHandlers
+
+# Run specific test in parallel without cache (re-run fresh)
+$ go test -count=1 -v ./test -run TestRoutesAndHandlers
+
+# Run all tests without cache (re-run fresh)
+$ go test -count=1 -v ./test/...
+```
+
+## How to run docker compose
+
+Despite, it is possible to run docker compose this project in local machine Please follow this steps:
+```sh
+# Build image and run all containers in the background
+docker compose -f deployments/docker-compose.yml up -d --build
+
+# Only run postgres database container
+docker compose -f deployments/docker-compose.yml up -d postgres
+
+# Restart postgres database container
+docker compose -f deployments/docker-compose.yml restart postgres
+
+# View Container Status
+docker compose -f deployments/docker-compose.yml ps
+
+# View all logs in realtime
+docker compose -f deployments/docker-compose.yml logs -f
+
+# View only REST API logs
+docker compose -f deployments/docker-compose.yml logs -f app
+
+# View only Scheduler logs
+docker compose -f deployments/docker-compose.yml logs -f scheduler
+
+# Stop container
+docker compose -f deployments/docker-compose.yml down
+
+# Stop container + reset/delete volume data database
+docker compose -f deployments/docker-compose.yml down -v
+```
+
 # Project-Structure
 
     inventory-reservation-backend/
