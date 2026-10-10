@@ -8,6 +8,7 @@ import (
 
 	"github.com/muharik28/inventory-reservation-backend/internal/application/repositories/reservation"
 	domain "github.com/muharik28/inventory-reservation-backend/internal/domain/entities/reservation"
+	dbsql "github.com/muharik28/inventory-reservation-backend/internal/pkg/database/sql"
 	"github.com/uptrace/bun"
 )
 
@@ -21,19 +22,14 @@ func NewReservationRepository(db *bun.DB) reservation.ReservationRepository {
 	}
 }
 
-func (r *ReservationRepositoryImpl) Create(ctx context.Context, db bun.IDB, res *domain.Reservation) error {
-	targetDB := db
-	if targetDB == nil {
-		targetDB = r.db
-	}
-
+func (r *ReservationRepositoryImpl) Create(ctx context.Context, res *domain.Reservation) error {
 	if res.CreatedAt.IsZero() {
 		res.CreatedAt = time.Now()
 	}
 	res.UpdatedAt = time.Now()
 
 	model := ToReservationModel(res)
-	_, err := targetDB.NewInsert().
+	_, err := dbsql.TxOrDB(ctx, r.db).NewInsert().
 		Model(model).
 		Exec(ctx)
 
@@ -57,14 +53,11 @@ func (r *ReservationRepositoryImpl) GetByID(ctx context.Context, reservationID s
 	return ToReservationDomain(model), nil
 }
 
-func (r *ReservationRepositoryImpl) GetByIDForUpdate(ctx context.Context, db bun.IDB, reservationID string) (*domain.Reservation, error) {
-	targetDB := db
-	if targetDB == nil {
-		targetDB = r.db
-	}
-
+// GetByIDForUpdate locks the reservation row (SELECT ... FOR UPDATE) on the
+// executor carried by ctx, so it participates in the ambient transaction.
+func (r *ReservationRepositoryImpl) GetByIDForUpdate(ctx context.Context, reservationID string) (*domain.Reservation, error) {
 	model := new(ReservationModel)
-	err := targetDB.NewSelect().
+	err := dbsql.TxOrDB(ctx, r.db).NewSelect().
 		Model(model).
 		Where("reservation_id = ?", reservationID).
 		For("UPDATE").
@@ -80,16 +73,11 @@ func (r *ReservationRepositoryImpl) GetByIDForUpdate(ctx context.Context, db bun
 	return ToReservationDomain(model), nil
 }
 
-func (r *ReservationRepositoryImpl) Update(ctx context.Context, db bun.IDB, res *domain.Reservation) error {
-	targetDB := db
-	if targetDB == nil {
-		targetDB = r.db
-	}
-
+func (r *ReservationRepositoryImpl) Update(ctx context.Context, res *domain.Reservation) error {
 	res.UpdatedAt = time.Now()
 	model := ToReservationModel(res)
 
-	_, err := targetDB.NewUpdate().
+	_, err := dbsql.TxOrDB(ctx, r.db).NewUpdate().
 		Model(model).
 		Column("status", "confirmed_at", "updated_at").
 		Where("reservation_id = ?", res.ReservationID).
@@ -123,16 +111,11 @@ func (r *ReservationRepositoryImpl) FindExpiredPending(ctx context.Context, now 
 	return results, nil
 }
 
-func (r *ReservationRepositoryImpl) SumActiveByItem(ctx context.Context, db bun.IDB, itemID string, now time.Time) (int, error) {
-	targetDB := db
-	if targetDB == nil {
-		targetDB = r.db
-	}
-
+func (r *ReservationRepositoryImpl) SumActiveByItem(ctx context.Context, itemID string, now time.Time) (int, error) {
 	var models []ReservationModel
 	var total int
 
-	err := targetDB.NewSelect().
+	err := dbsql.TxOrDB(ctx, r.db).NewSelect().
 		Model(&models).
 		ColumnExpr("COALESCE(SUM(quantity), 0) AS active_reserved").
 		Where("item_id = ?", itemID).

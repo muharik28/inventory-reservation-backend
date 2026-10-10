@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/muharik28/inventory-reservation-backend/configs"
+	"github.com/muharik28/inventory-reservation-backend/internal/pkg/logger"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
 	"github.com/uptrace/bun/driver/pgdriver"
-	"github.com/muharik28/inventory-reservation-backend/configs"
-	"github.com/muharik28/inventory-reservation-backend/internal/pkg/logger"
 )
 
 func NewBunDB(cfg configs.DatabaseConfig) (*bun.DB, error) {

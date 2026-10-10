@@ -37,7 +37,8 @@ var SchedulerCmd = &cobra.Command{
 
 		inventoryRepo := invRepo.NewInventoryRepository(db)
 		reservationRepo := resRepo.NewReservationRepository(db)
-		reservationUseCase := resUseCase.NewReservationUseCase(db, inventoryRepo, reservationRepo, cfg)
+		txMgr := sql.NewBunTxManager(db)
+		reservationUseCase := resUseCase.NewReservationUseCase(txMgr, inventoryRepo, reservationRepo, cfg)
 
 		logger.Info("Starting expired reservations cleanup scheduler", "interval", cfg.SchedulerInterval)
 

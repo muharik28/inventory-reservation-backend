@@ -20,7 +20,7 @@ available_stock = total_stock - reserved_stock
 
 `NOW()` is always the PostgreSQL clock, fetched inside the transaction. Because availability is a function of committed rows, an expired reservation stops reducing stock **immediately** — correctness does not depend on the worker's schedule. The worker only performs bookkeeping (flip `PENDING → EXPIRED`).
 
-**Layering.** `routes → handlers (HTTP/DTO) → use cases (business rules + transactions) → repositories (Bun queries)`. Domain entities carry the rules (`CanReserve`, `IsPending`, `IsExpired`); handlers translate domain errors to HTTP + machine-readable `code` (`INSUFFICIENT_STOCK`, `RESERVATION_EXPIRED`, ...).
+**Layering.** `routes → handlers (HTTP/DTO) → use cases (business rules + transactions) → repositories (Bun queries)`. Transactions are opened through a `TxManager` port (consumer-defined interface, `BunTxManager` implementation): the use case never touches `*bun.DB`, and repositories join the ambient transaction from `context`. Domain entities carry the rules (`CanReserve`, `IsPending`, `IsExpired`); handlers translate domain errors to HTTP + machine-readable `code` (`INSUFFICIENT_STOCK`, `RESERVATION_EXPIRED`, ...).
 
 **Concurrency strategy.**
 

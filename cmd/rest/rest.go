@@ -52,10 +52,13 @@ var RestCmd = &cobra.Command{
 		inventoryRepo := invRepo.NewInventoryRepository(db)
 		reservationRepo := resRepo.NewReservationRepository(db)
 
+		// Persistence port: transaction manager + database clock
+		txMgr := sql.NewBunTxManager(db)
+
 		// Use Cases
 		iUseCase := infoUseCase.NewInfoUseCase(iRepo)
-		inventoryUseCase := invUseCase.NewInventoryUseCase(db, inventoryRepo, reservationRepo)
-		reservationUseCase := resUseCase.NewReservationUseCase(db, inventoryRepo, reservationRepo, cfg)
+		inventoryUseCase := invUseCase.NewInventoryUseCase(txMgr, inventoryRepo, reservationRepo)
+		reservationUseCase := resUseCase.NewReservationUseCase(txMgr, inventoryRepo, reservationRepo, cfg)
 
 		// Handlers
 		iHandler := infoHandler.NewInfoHandler(iUseCase)

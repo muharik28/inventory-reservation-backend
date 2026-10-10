@@ -4,10 +4,10 @@ import (
 	"context"
 	"time"
 
-	"github.com/uptrace/bun"
 	"github.com/muharik28/inventory-reservation-backend/configs"
 	"github.com/muharik28/inventory-reservation-backend/internal/application/repositories/info"
 	domain "github.com/muharik28/inventory-reservation-backend/internal/domain/entities/info"
+	"github.com/uptrace/bun"
 )
 
 type InfoRepositoryImpl struct {

@@ -12,24 +12,25 @@ var (
 )
 
 type Inventory struct {
-	ItemID        string    `json:"item_id"`
-	TotalStock    int       `json:"total_stock"`
-	ReservedStock int       `json:"reserved_stock"`
-	CreatedAt     time.Time `json:"created_at"`
-	UpdatedAt     time.Time `json:"updated_at"`
+	ItemID     string    `json:"item_id"`
+	TotalStock int       `json:"total_stock"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
 }
 
-func (i *Inventory) AvailableStock() int {
-	available := i.TotalStock - i.ReservedStock
+// AvailableStock computes the sellable stock given the currently active
+// reserved quantity (active PENDING reservations with expires_at in the future).
+func (i *Inventory) AvailableStock(reservedQty int) int {
+	available := i.TotalStock - reservedQty
 	if available < 0 {
 		return 0
 	}
 	return available
 }
 
-func (i *Inventory) CanReserve(qty int) bool {
+func (i *Inventory) CanReserve(qty, reservedQty int) bool {
 	if qty <= 0 {
 		return false
 	}
-	return i.AvailableStock() >= qty
+	return i.AvailableStock(reservedQty) >= qty
 }
