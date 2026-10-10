@@ -7,7 +7,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/spf13/cobra"
 	"github.com/muharik28/inventory-reservation-backend/cmd"
 	"github.com/muharik28/inventory-reservation-backend/configs"
 	invRepo "github.com/muharik28/inventory-reservation-backend/internal/application/repositories/inventory/impl"
@@ -15,6 +14,7 @@ import (
 	resUseCase "github.com/muharik28/inventory-reservation-backend/internal/application/usecases/reservation/impl"
 	"github.com/muharik28/inventory-reservation-backend/internal/pkg/database/sql"
 	"github.com/muharik28/inventory-reservation-backend/internal/pkg/logger"
+	"github.com/spf13/cobra"
 )
 
 var SchedulerCmd = &cobra.Command{
@@ -28,6 +28,12 @@ var SchedulerCmd = &cobra.Command{
 			logger.Error("Database connection failed for scheduler", "error", err.Error())
 			os.Exit(1)
 		}
+
+		defer func() {
+			if closeErr := db.Close(); closeErr != nil {
+				logger.Error("Failed to close database connections", "error", closeErr.Error())
+			}
+		}()
 
 		inventoryRepo := invRepo.NewInventoryRepository(db)
 		reservationRepo := resRepo.NewReservationRepository(db)
