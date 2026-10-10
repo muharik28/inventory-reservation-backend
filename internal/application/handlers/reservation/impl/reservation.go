@@ -7,7 +7,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/muharik28/inventory-reservation-backend/internal/application/handlers/reservation"
 	"github.com/muharik28/inventory-reservation-backend/internal/application/presenters/request"
+	"github.com/muharik28/inventory-reservation-backend/internal/application/presenters/response"
 	usecase "github.com/muharik28/inventory-reservation-backend/internal/application/usecases/reservation"
+	"github.com/muharik28/inventory-reservation-backend/internal/domain/entities"
 	domainInv "github.com/muharik28/inventory-reservation-backend/internal/domain/entities/inventory"
 	domainRes "github.com/muharik28/inventory-reservation-backend/internal/domain/entities/reservation"
 )
@@ -22,35 +24,48 @@ func NewReservationHandler(useCase usecase.ReservationUseCase) reservation.Reser
 	}
 }
 
+// Reserve godoc
+// @Summary Reserve inventory stock
+// @Description Temporarily reserve a quantity of stock for a specific user with a TTL expiration
+// @Tags Reservation
+// @Accept json
+// @Produce json
+// @Param request body request.ReserveStockRequest true "Reserve stock request payload"
+// @Success 200 {object} response.ReserveStockResponse
+// @Failure 400 {object} entities.ErrorResponse
+// @Failure 404 {object} entities.ErrorResponse
+// @Failure 500 {object} entities.ErrorResponse
+// @Router /api/v1/inventory/reserve [post]
 func (h *ReservationHandlerImpl) Reserve(c *gin.Context) {
 	var req request.ReserveStockRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status": "error",
-			"error":  err.Error(),
+		c.JSON(http.StatusBadRequest, entities.ErrorResponse{
+			Status: "error",
+			Error:  err.Error(),
 		})
 		return
 	}
 
+	var res *response.ReserveStockResponse
 	res, err := h.useCase.ReserveStock(c.Request.Context(), req)
 	if err != nil {
 		if errors.Is(err, domainInv.ErrInventoryNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{
-				"status": "error",
-				"error":  err.Error(),
+			c.JSON(http.StatusNotFound, entities.ErrorResponse{
+				Status: "error",
+				Error:  err.Error(),
 			})
 			return
 		}
 		if errors.Is(err, domainInv.ErrInsufficientStock) || errors.Is(err, domainInv.ErrInvalidQuantity) {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"status": "error",
-				"error":  err.Error(),
+			c.JSON(http.StatusBadRequest, entities.ErrorResponse{
+				Status: "error",
+				Error:  err.Error(),
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status": "error",
-			"error":  err.Error(),
+		c.JSON(http.StatusInternalServerError, entities.ErrorResponse{
+			Status: "error",
+			Error:  err.Error(),
 		})
 		return
 	}
@@ -58,38 +73,52 @@ func (h *ReservationHandlerImpl) Reserve(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
+// Confirm godoc
+// @Summary Confirm reservation
+// @Description Confirm an active stock reservation before it expires
+// @Tags Reservation
+// @Accept json
+// @Produce json
+// @Param request body request.ConfirmReservationRequest true "Confirm reservation request payload"
+// @Success 200 {object} response.ConfirmReservationResponse
+// @Failure 400 {object} entities.ErrorResponse
+// @Failure 404 {object} entities.ErrorResponse
+// @Failure 500 {object} entities.ErrorResponse
+// @Router /api/v1/inventory/confirm [post]
 func (h *ReservationHandlerImpl) Confirm(c *gin.Context) {
 	var req request.ConfirmReservationRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status": "error",
-			"error":  err.Error(),
+		c.JSON(http.StatusBadRequest, entities.ErrorResponse{
+			Status: "error",
+			Error:  err.Error(),
 		})
 		return
 	}
 
+	var res *response.ConfirmReservationResponse
 	res, err := h.useCase.ConfirmReservation(c.Request.Context(), req)
 	if err != nil {
 		if errors.Is(err, domainRes.ErrReservationNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{
-				"status": "error",
-				"error":  err.Error(),
+			c.JSON(http.StatusNotFound, entities.ErrorResponse{
+				Status: "error",
+				Error:  err.Error(),
 			})
 			return
 		}
 		if errors.Is(err, domainRes.ErrReservationAlreadyHandled) || errors.Is(err, domainRes.ErrReservationExpired) {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"status": "error",
-				"error":  err.Error(),
+			c.JSON(http.StatusBadRequest, entities.ErrorResponse{
+				Status: "error",
+				Error:  err.Error(),
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status": "error",
-			"error":  err.Error(),
+		c.JSON(http.StatusInternalServerError, entities.ErrorResponse{
+			Status: "error",
+			Error:  err.Error(),
 		})
 		return
 	}
 
 	c.JSON(http.StatusOK, res)
 }
+

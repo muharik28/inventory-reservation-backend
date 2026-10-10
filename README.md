@@ -4,6 +4,7 @@
 - Install golang plugin to your editor choice (ie. VSCode, Atom, Goland, Intellij IDE)
 - Install [PostgresSQL](https://www.postgresql.org/download/)
 - [Docker](https://docs.docker.com/install/) and [docker-compose](https://docs.docker.com/compose/)
+- [swag](https://github.com/swaggo/swag) CLI: `go install github.com/swaggo/swag/cmd/swag@latest` (for API documentation)
 
 ## How to run
 
@@ -111,7 +112,24 @@ docker compose -f deployments/docker-compose.yml down
 docker compose -f deployments/docker-compose.yml down -v
 ```
 
+## API Documentation (Swagger)
+
+API documentation is generated using **Swagger / OpenAPI** and served interactively via Swagger UI.
+
+### Access Swagger UI
+When the REST server is running (`go run main.go rest`), open:
+- **Swagger UI**: [http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html)
+- **OpenAPI JSON**: [http://localhost:8080/swagger/doc.json](http://localhost:8080/swagger/doc.json)
+
+### Regenerate Swagger Documentation
+Whenever routes, handler annotations, or request/response DTOs are updated, regenerate the documentation files to `docs/api`:
+```sh
+# Generate Swagger docs into docs/api/
+$ swag init -g cmd/rest/rest.go -o docs/api
+```
+
 # Project-Structure
+
 
     inventory-reservation-backend/
     ├── README.md                # Project description
@@ -136,7 +154,7 @@ docker compose -f deployments/docker-compose.yml down -v
     ├── deployments/             # Deployment-related files
     │   ├── docker-compose.yml   # Docker Compose configuration file
     ├── docs/                    # Project documentation
-    │   ├── api/                 # API documentation
+    │   ├── api/                 # API documentation (Swagger generated docs)
     │   ├── architecture/        # Architecture documentation
     │   ├── images/              # Images related to documentation
     ├── internal/                # Code that can only be used by this project

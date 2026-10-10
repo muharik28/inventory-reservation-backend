@@ -1,0 +1,471 @@
+{
+    "schemes": [
+        "http",
+        "https"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "Backend REST API for Inventory Reservation System.",
+        "title": "Inventory Reservation API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/",
+    "paths": {
+        "/api/v1/info": {
+            "get": {
+                "description": "Retrieve service runtime metadata, environment, and database connectivity status",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Info"
+                ],
+                "summary": "Get service info",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.InfoDetailResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/entities.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/inventory/confirm": {
+            "post": {
+                "description": "Confirm an active stock reservation before it expires",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Reservation"
+                ],
+                "summary": "Confirm reservation",
+                "parameters": [
+                    {
+                        "description": "Confirm reservation request payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.ConfirmReservationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.ConfirmReservationResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/entities.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/entities.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/entities.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/inventory/items": {
+            "post": {
+                "description": "Create a new inventory item or update total stock for an existing item",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Create or update item stock",
+                "parameters": [
+                    {
+                        "description": "Create item request payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.CreateItemRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/response.StockResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/entities.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/entities.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/inventory/reserve": {
+            "post": {
+                "description": "Temporarily reserve a quantity of stock for a specific user with a TTL expiration",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Reservation"
+                ],
+                "summary": "Reserve inventory stock",
+                "parameters": [
+                    {
+                        "description": "Reserve stock request payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.ReserveStockRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.ReserveStockResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/entities.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/entities.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/entities.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/inventory/stock": {
+            "get": {
+                "description": "Retrieve current inventory stock (total, reserved, and available) for a specific item",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Get stock by item ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Item ID",
+                        "name": "item_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.StockResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/entities.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/entities.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/entities.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/health": {
+            "get": {
+                "description": "Health check endpoint verifying service and database status",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Info"
+                ],
+                "summary": "Health check",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.HealthResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/entities.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/info": {
+            "get": {
+                "description": "Retrieve service runtime metadata, environment, and database connectivity status",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Info"
+                ],
+                "summary": "Get service info",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.InfoDetailResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/entities.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "entities.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "details": {
+                    "type": "string"
+                },
+                "error": {
+                    "type": "string",
+                    "example": "error message description"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "error"
+                }
+            }
+        },
+        "request.ConfirmReservationRequest": {
+            "type": "object",
+            "required": [
+                "reservation_id"
+            ],
+            "properties": {
+                "reservation_id": {
+                    "type": "string",
+                    "example": "res-abc-123"
+                }
+            }
+        },
+        "request.CreateItemRequest": {
+            "type": "object",
+            "required": [
+                "item_id",
+                "total_stock"
+            ],
+            "properties": {
+                "item_id": {
+                    "type": "string",
+                    "example": "ITEM-001"
+                },
+                "total_stock": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 100
+                }
+            }
+        },
+        "request.ReserveStockRequest": {
+            "type": "object",
+            "required": [
+                "item_id",
+                "quantity",
+                "user_id"
+            ],
+            "properties": {
+                "item_id": {
+                    "type": "string",
+                    "example": "ITEM-001"
+                },
+                "quantity": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "user_id": {
+                    "type": "string",
+                    "example": "USR-123"
+                }
+            }
+        },
+        "response.ConfirmReservationResponse": {
+            "type": "object",
+            "properties": {
+                "confirmed_at": {
+                    "type": "string",
+                    "example": "2026-10-10T08:31:00Z"
+                },
+                "reservation_id": {
+                    "type": "string",
+                    "example": "res-abc-123"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "confirmed"
+                }
+            }
+        },
+        "response.HealthResponse": {
+            "type": "object",
+            "properties": {
+                "db_status": {
+                    "type": "string",
+                    "example": "connected"
+                },
+                "service": {
+                    "type": "string",
+                    "example": "inventory-reservation-backend"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "healthy"
+                }
+            }
+        },
+        "response.InfoDetailResponse": {
+            "type": "object",
+            "properties": {
+                "db_status": {
+                    "type": "string",
+                    "example": "connected"
+                },
+                "environment": {
+                    "type": "string",
+                    "example": "development"
+                },
+                "server_time": {
+                    "type": "string",
+                    "example": "2026-10-10T08:30:00Z"
+                },
+                "service_name": {
+                    "type": "string",
+                    "example": "inventory-reservation-backend"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "healthy"
+                },
+                "version": {
+                    "type": "string",
+                    "example": "1.0.0"
+                }
+            }
+        },
+        "response.ReserveStockResponse": {
+            "type": "object",
+            "properties": {
+                "expires_at": {
+                    "type": "string",
+                    "example": "2026-10-10T08:35:00Z"
+                },
+                "item_id": {
+                    "type": "string",
+                    "example": "ITEM-001"
+                },
+                "quantity": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "reservation_id": {
+                    "type": "string",
+                    "example": "res-abc-123"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "reserved"
+                }
+            }
+        },
+        "response.StockResponse": {
+            "type": "object",
+            "properties": {
+                "available_stock": {
+                    "type": "integer",
+                    "example": 90
+                },
+                "item_id": {
+                    "type": "string",
+                    "example": "ITEM-001"
+                },
+                "reserved_stock": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "total_stock": {
+                    "type": "integer",
+                    "example": 100
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,324 @@
+basePath: /
+definitions:
+  entities.ErrorResponse:
+    properties:
+      details:
+        type: string
+      error:
+        example: error message description
+        type: string
+      status:
+        example: error
+        type: string
+    type: object
+  request.ConfirmReservationRequest:
+    properties:
+      reservation_id:
+        example: res-abc-123
+        type: string
+    required:
+    - reservation_id
+    type: object
+  request.CreateItemRequest:
+    properties:
+      item_id:
+        example: ITEM-001
+        type: string
+      total_stock:
+        example: 100
+        minimum: 0
+        type: integer
+    required:
+    - item_id
+    - total_stock
+    type: object
+  request.ReserveStockRequest:
+    properties:
+      item_id:
+        example: ITEM-001
+        type: string
+      quantity:
+        example: 2
+        type: integer
+      user_id:
+        example: USR-123
+        type: string
+    required:
+    - item_id
+    - quantity
+    - user_id
+    type: object
+  response.ConfirmReservationResponse:
+    properties:
+      confirmed_at:
+        example: "2026-10-10T08:31:00Z"
+        type: string
+      reservation_id:
+        example: res-abc-123
+        type: string
+      status:
+        example: confirmed
+        type: string
+    type: object
+  response.HealthResponse:
+    properties:
+      db_status:
+        example: connected
+        type: string
+      service:
+        example: inventory-reservation-backend
+        type: string
+      status:
+        example: healthy
+        type: string
+    type: object
+  response.InfoDetailResponse:
+    properties:
+      db_status:
+        example: connected
+        type: string
+      environment:
+        example: development
+        type: string
+      server_time:
+        example: "2026-10-10T08:30:00Z"
+        type: string
+      service_name:
+        example: inventory-reservation-backend
+        type: string
+      status:
+        example: healthy
+        type: string
+      version:
+        example: 1.0.0
+        type: string
+    type: object
+  response.ReserveStockResponse:
+    properties:
+      expires_at:
+        example: "2026-10-10T08:35:00Z"
+        type: string
+      item_id:
+        example: ITEM-001
+        type: string
+      quantity:
+        example: 2
+        type: integer
+      reservation_id:
+        example: res-abc-123
+        type: string
+      status:
+        example: reserved
+        type: string
+    type: object
+  response.StockResponse:
+    properties:
+      available_stock:
+        example: 90
+        type: integer
+      item_id:
+        example: ITEM-001
+        type: string
+      reserved_stock:
+        example: 10
+        type: integer
+      total_stock:
+        example: 100
+        type: integer
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Backend REST API for Inventory Reservation System.
+  title: Inventory Reservation API
+  version: "1.0"
+paths:
+  /api/v1/info:
+    get:
+      description: Retrieve service runtime metadata, environment, and database connectivity
+        status
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.InfoDetailResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/entities.ErrorResponse'
+      summary: Get service info
+      tags:
+      - Info
+  /api/v1/inventory/confirm:
+    post:
+      consumes:
+      - application/json
+      description: Confirm an active stock reservation before it expires
+      parameters:
+      - description: Confirm reservation request payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.ConfirmReservationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ConfirmReservationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/entities.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/entities.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/entities.ErrorResponse'
+      summary: Confirm reservation
+      tags:
+      - Reservation
+  /api/v1/inventory/items:
+    post:
+      consumes:
+      - application/json
+      description: Create a new inventory item or update total stock for an existing
+        item
+      parameters:
+      - description: Create item request payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateItemRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.StockResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/entities.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/entities.ErrorResponse'
+      summary: Create or update item stock
+      tags:
+      - Inventory
+  /api/v1/inventory/reserve:
+    post:
+      consumes:
+      - application/json
+      description: Temporarily reserve a quantity of stock for a specific user with
+        a TTL expiration
+      parameters:
+      - description: Reserve stock request payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.ReserveStockRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ReserveStockResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/entities.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/entities.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/entities.ErrorResponse'
+      summary: Reserve inventory stock
+      tags:
+      - Reservation
+  /api/v1/inventory/stock:
+    get:
+      description: Retrieve current inventory stock (total, reserved, and available)
+        for a specific item
+      parameters:
+      - description: Item ID
+        in: query
+        name: item_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.StockResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/entities.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/entities.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/entities.ErrorResponse'
+      summary: Get stock by item ID
+      tags:
+      - Inventory
+  /health:
+    get:
+      description: Health check endpoint verifying service and database status
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.HealthResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/entities.ErrorResponse'
+      summary: Health check
+      tags:
+      - Info
+  /info:
+    get:
+      description: Retrieve service runtime metadata, environment, and database connectivity
+        status
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.InfoDetailResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/entities.ErrorResponse'
+      summary: Get service info
+      tags:
+      - Info
+schemes:
+- http
+- https
+swagger: "2.0"

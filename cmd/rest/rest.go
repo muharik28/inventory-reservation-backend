@@ -25,6 +25,12 @@ import (
 	"github.com/muharik28/inventory-reservation-backend/internal/pkg/logger"
 )
 
+// @title Inventory Reservation API
+// @version 1.0
+// @description Backend REST API for Inventory Reservation System.
+// @host localhost:8080
+// @BasePath /
+// @schemes http https
 var RestCmd = &cobra.Command{
 	Use:   "rest",
 	Short: "Start the REST API server",
