@@ -6,6 +6,32 @@
 - [Docker](https://docs.docker.com/install/) and [docker-compose](https://docs.docker.com/compose/)
 - [swag](https://github.com/swaggo/swag) CLI: `go install github.com/swaggo/swag/cmd/swag@latest` (for API documentation)
 
+## Install make
+
+### You first need Makefile
+
+```sh
+# install windows
+C:\> choco install make
+```
+
+```sh
+# install linux
+$ sudo apt-get install make
+```
+
+```sh
+# install MacOS with Homebrew
+$ brew install make
+```
+
+### Verify Version Makefile
+
+```sh
+# verify that Makefile is installed correctly by checking the version
+$ make --version
+```
+
 ## How to run
 
 Despite, it is possible to run this project in local machine Please follow this steps:
@@ -13,30 +39,30 @@ Despite, it is possible to run this project in local machine Please follow this 
 
 ```sh
 # run rest api server
-$ go run main.go rest
+$ make rest
 
 # run scheduler (optional)
-$ go run main.go scheduler
+$ make sch
 
 # General help
-$ go run main.go help
+$ make help
 
 # Specific help for sub-commands
-$ go run main.go help rest
+$ make help-rest
 
-$ go run main.go help scheduler
+$ make help-sch
 
 # Using --help flag
-$ go run main.go rest --help
+$ make help-flag
 
 # Example for PowerShell
 $ go run main.go completion powershell | Out-String | Invoke-Expression
 
 # See other shell options
-$ go run main.go completion --help
+$ make help-completion
 
 # 1. Build binary
-$ go build -o inventory.exe main.go
+$ make app-build
 
 # 2. Run commands
 $ .\inventory.exe rest
@@ -51,27 +77,30 @@ Despite, it is possible to run unit test this project in local machine Please fo
 > **Note:** the `test/` suite contains unit tests **and** PostgreSQL-backed integration/concurrency tests.
 > Integration tests create a throwaway `inventory_test_db` database, so PostgreSQL must be reachable
 > (defaults match Docker Compose: `localhost:5432`, `postgres/postgres`). Start it first with:
-> `$ docker compose -f deployments/docker-compose.yml up -d postgres`
+> `$ make compose-db`
 > Without PostgreSQL, the integration tests are skipped automatically.
 
 ```sh
 # Run all tests with the race detector (required by the Definition of Done)
-$ go test -race -v ./...
+$ make test-all
 
 # Run unit test on folder test
-$ go test -v ./test/...
+$ make test-unit
 
 # Run all tests in the project
-$ go test -v ./...
+$ make test-full
 
 # Run specific test
-$ go test -v ./test -run TestDomainLogic
+$ make test-specific
 
 # Run concurrency / stress test
-$ go test -race -v ./test -run TestConcurrentReservationsDoNotOversell
+$ make test-concurrency
 
 # Run all tests without cache (re-run fresh)
-$ go test -count=1 -race -v ./test/...
+$ make test-cache
+
+# Run all tests with cache
+$ make test-all-cache
 ```
 
 ## How to run docker compose
@@ -79,37 +108,37 @@ $ go test -count=1 -race -v ./test/...
 Despite, it is possible to run docker compose this project in local machine Please follow this steps:
 ```sh
 # Build image and run all containers in the background
-$ docker compose -f deployments/docker-compose.yml up -d --build
+$ make compose
 
 # Only run postgres database container
-$ docker compose -f deployments/docker-compose.yml up -d postgres
+$ make compose-db
 
 # Restart postgres database container
-$ docker compose -f deployments/docker-compose.yml restart postgres
+$ make compose-db-restart
 
 # View Container Status
-$ docker compose -f deployments/docker-compose.yml ps
+$ make compose-ps
 
 # View all logs in realtime
-$ docker compose -f deployments/docker-compose.yml logs -f
+$ make compose-logs
 
 # View only REST API logs
-$ docker compose -f deployments/docker-compose.yml logs -f app
+$ make compose-log-app
 
 # View only Scheduler logs
-$ docker compose -f deployments/docker-compose.yml logs -f scheduler
+$ make compose-log-sch
 
 # Stop container
-$ docker compose -f deployments/docker-compose.yml down
+$ make compose-down
 
 # Stop container + reset/delete volume data database
-$ docker compose -f deployments/docker-compose.yml down -v
+$ make compose-down-volume
 
 # Even if an error still occurs in `go mod download`
 # Notice the error message that appears before exit code: 1
-$ docker build --no-cache --progress=plain -t app .
+$ make compose-cache-app
 
-$ docker build --no-cache --progress=plain -t scheduler .
+$ make compose-cache-sch
 ```
 
 ## API Documentation (Swagger)
@@ -125,7 +154,7 @@ When the REST server is running (`go run main.go rest`), open:
 Whenever routes, handler annotations, or request/response DTOs are updated, regenerate the documentation files to `docs/api`:
 ```sh
 # Generate Swagger docs into docs/api/
-$ swag init -g cmd/rest/rest.go -o docs/api
+$ make swag
 ```
 
 # Project-Structure
