@@ -164,6 +164,8 @@ $ make swag
     ├── README.md                # Project description
     ├── go.mod                   # Go module
     ├── go.sum                   # Dependency list
+    ├── Makefile                 # Automating the build process (compilation and integration) of program code
+    ├── .env.example             # Environment variables example
     ├── api/                     # API definitions
     │   ├── rest/                # REST API definitions
     │   │   ├── api/             # REST API implementation
